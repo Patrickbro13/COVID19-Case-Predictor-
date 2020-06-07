@@ -34,21 +34,25 @@ function predict_cases ()
   sqr = x.^2 ;
   cube = x.^3 ;
   fourth = x.^4 ;
+  fifth = x.^5 ;
+  sixth = x.^6 ;
   X = [X sqr];
   X = [X cube];
   X = [X fourth];
   
-  theta = pinv(X' * X) * X' * y ;
+  l = X' * X ;
   
-  retval = theta(1) + theta(2)*n + theta(3)*n.^2 + theta(4)*n.^3 + theta(5)*n.^4;
+  theta = pinv(l + 100*eye(size(l))) * X' * y ;
   
+  retval = theta(1) + theta(2)*n + theta(3)*n.^2 + theta(4)*n.^3 + theta(5)*n.^4 ; 
+  display(theta)
   fprintf('Approx cases at %dth day after 1st March are: ',n);
-  fprintf(' %f \n', retval);
+  fprintf(' %f \n', round(retval));
   
   
   %real = load('COVID_cases.txt');
   %xr = real(:,1);
-  %hr = theta(1) + theta(2)*xr + theta(3)*xr.^2 + theta(4)*xr.^3 + theta(5)*xr.^4 ;
+  %hr = theta(1) + theta(2)*xr + theta(3)*xr.^2 + theta(4)*xr.^3 + theta(5)*xr.^4  ;
   %plot(real)
   %hold on 
   %plot(xr,hr)
@@ -56,11 +60,13 @@ function predict_cases ()
   error = load('for_error.txt');
   err_x = error(:,1);
   err_y = error(:,2);
-  err = ones(10,1);
-  for i = 1:length(err_y) 
+  len = length(err_y);
+  err = ones(19,1);
+  for i = 1:len
     err(i) = abs(100 * (err_y(i) - (theta(1) + theta(2)*err_x(i) + theta(3)*err_x(i).^2 + theta(4)*err_x(i).^3 + theta(5)*err_x(i).^4) )./err_y(i));
   endfor
-  fprintf('With an error percentage = %f \n',sum(err) / 10);
+  output_precision(1);
+  fprintf('With an error percentage = %d \n',sum(err) / len);
   %fprintf('so cases will lie in range = %f to %f \n',retval - retval*sum(err)/1000,retval + retval*sum(err)/1000);
     
 endfunction
